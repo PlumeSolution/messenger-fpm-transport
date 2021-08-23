@@ -6,30 +6,31 @@ use Enqueue\Dsn\Dsn;
 use hollodotme\FastCGI\Client;
 use hollodotme\FastCGI\Requests\PostRequest;
 use hollodotme\FastCGI\SocketConnections\NetworkSocket;
-use Interop\Queue\Exception\Exception;
 use Symfony\Component\Messenger\Envelope;
 use Symfony\Component\Messenger\Exception\TransportException;
 use Symfony\Component\Messenger\Transport\Serialization\SerializerInterface;
-use Symfony\Component\Messenger\Transport\SetupableTransportInterface;
 use Symfony\Component\Messenger\Transport\TransportInterface;
 
 /**
- *
+ * Transport driver for supporting FPM in Messenger component
  */
 class FpmTransport implements TransportInterface
 {
     private Client $client;
-    private Dsn $dsn;
-    private array $options;
     private SerializerInterface $serializer;
+    private NetworkSocket $connection;
 
+    /**
+     * @param string              $dsn
+     * @param array               $options
+     * @param SerializerInterface $serializer
+     */
     public function __construct(string $dsn, array $options, SerializerInterface $serializer)
     {
         $this->client = new Client();
-        $this->dsn = Dsn::parseFirst($dsn);
-        $this->options = $options;
+        $dsnInstance = Dsn::parseFirst($dsn);
         $this->serializer = $serializer;
-        $this->connection = new NetworkSocket($this->dsn->getHost(), $this->dsn->getPort());
+        $this->connection = new NetworkSocket($dsnInstance->getHost(), $dsnInstance->getPort());
     }
 
     /**

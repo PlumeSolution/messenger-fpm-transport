@@ -10,6 +10,7 @@ use Symfony\Component\Messenger\Envelope;
 use Symfony\Component\Messenger\Exception\TransportException;
 use Symfony\Component\Messenger\Transport\Serialization\SerializerInterface;
 use Symfony\Component\Messenger\Transport\TransportInterface;
+use function PHPUnit\Framework\isNull;
 
 /**
  * Transport driver for supporting FPM in Messenger component
@@ -29,6 +30,10 @@ class FpmTransport implements TransportInterface
     {
         $this->client = new Client();
         $dsnInstance = Dsn::parseFirst($dsn);
+        if (isNull($dsnInstance))
+        {
+            throw new FpmTransportException("impossible to parse dsn \"$dsn\" for FPM transport");
+        }
         $this->serializer = $serializer;
         $this->connection = new NetworkSocket($dsnInstance->getHost(), $dsnInstance->getPort());
     }
